@@ -10,12 +10,12 @@ public class TestList {
 //    public static final int DEFAULT_SIZE = 115249;
     public static final int MAX_SIZE = Integer.MAX_VALUE;
     private int elems[][];
-//    private boolean used[][];
 
     public TestList(){
         this(MAX_SIZE);
     }
 
+    //Bad practice, change the init sizes and all additional methods
     private TestList(int size){
         checkSize(size);
         this.size = new int[MAX_SIZE];
@@ -27,23 +27,15 @@ public class TestList {
         this.currElem = -1;
         this.elems = new int[MAX_SIZE][];
         this.elems[0] = new int[size];
-//        this.used = new boolean[MAX_SIZE][];
-//        this.used[0] = new boolean[size];
     }
 
     private void increaseCapacity() {
         if (currElem == MAX_SIZE) {
             size[++currPart] = MAX_SIZE;
             elems[currPart] = new int[MAX_SIZE];
-            currElem = 0;
-//            used[]
+            currElem = -1;
         }
     }
-
-    //TODO
-//    private void increaseCapacity(int part){
-//
-//    }
 
     public int get(long index){
         checkIndex(index);
@@ -56,21 +48,34 @@ public class TestList {
         return elems[part][insideIndex];
     }
 
+    public void addUnique(int value) {
+        if (currElem > 0) {
+            if (elems[currPart][currElem] == value) {
+                return;
+            }
+        }
+        add(value);
+    }
+
     public void add(int value){
         increaseCapacity();
-        elems[currPart][currElem++] = value;
+        elems[currPart][++currElem] = value;
+    }
+
+    public void add(Integer value) {
+        add(value.intValue());
     }
 
     public void add(long index, int value){
         int part = (int) index / MAX_SIZE;
         int insideIndex = (int) index % MAX_SIZE;
         if (currPart < part
-                || (currPart == part && currElem < insideIndex)) {
+                || (currPart == part && (currElem + 1) < insideIndex)) {
             System.err.println("Index is too big, the element would be added to the end to of the list");
             add(value);
             return;
         }
-        if (currPart != part || currElem < insideIndex) {
+        if (currPart != part || (currElem + 1) < insideIndex) {
             increaseCapacity();
             for(int i = currPart; i > part; i--){
                 System.arraycopy(elems[i], 0, elems[i], 1, ((i == currPart) ? currElem : MAX_SIZE));
@@ -81,6 +86,10 @@ public class TestList {
         elems[part][insideIndex] = value;
     }
 
+    public void add(long index, Integer value){
+        add(index, value.intValue());
+    }
+
 //    private boolean checkCapacity() {
 //        return checkCapacity(currPart, currElem);
 //    }
@@ -89,15 +98,25 @@ public class TestList {
 //        return size[currPart] > currElem;
 //    }
 
-    //TODO
-    public long getLastIndex(){
+    private long getLastIndex(){
         return currPart * MAX_SIZE + currElem;
+    }
+
+    public long getSize() {
+        return getLastIndex();
+    }
+
+    public void remove(long index) {
+        checkIndex(index);
     }
 
     private void checkIndex(long index) {
         if (index < 0) {
             throw new IndexOutOfBoundsException("Bad index, expected long non negative value, but found: " + index);
-        } else if (index > MAX_SIZE * MAX_SIZE) {
+        } else if(index > getLastIndex()) {
+            throw new IndexOutOfBoundsException("Bad index, looking for " + index +
+                    " element in the " + getLastIndex() + " elems size list!");
+        } else if (index > ((long) MAX_SIZE) * MAX_SIZE) {
             throw new IndexOutOfBoundsException("Value is too big! Found Value: " + index);
         }
     }
@@ -108,6 +127,6 @@ public class TestList {
         }
     }
 
-    
+
 
 }
